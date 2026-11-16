@@ -31,8 +31,6 @@ from pathlib import Path
 from time import time
 from traceback import format_exc
 from typing import Any
-from urllib.parse import quote
-from uuid import uuid4
 
 from fastapi import Request
 from pydantic import BaseModel, ConfigDict
@@ -77,6 +75,7 @@ from resources_servers.swebench.patch_capture import (
     prepare_git_for_commits,
 )
 from resources_servers.swebench.sandbox_sessions import SandboxSessionResourcesServer
+from resources_servers.swebench.verification_logs import verification_log_path
 
 
 class SweInternalV1ResourcesServerConfig(BaseResourcesServerConfig):
@@ -412,11 +411,7 @@ class SweInternalV1ResourcesServer(SandboxSessionResourcesServer):
         patch = capture.patch
 
         inputs = self._inputs(body, patch)
-        log_dir = (
-            self.config.verification_log_dir / f"instance-{quote(body.instance_id, safe='')}" / uuid4().hex
-            if self.config.verification_log_dir is not None
-            else None
-        )
+        log_dir = verification_log_path(self.config.verification_log_dir, body.instance_id)
 
         files = verification_files(inputs)
         attempts = 1 + max(self.config.inconclusive_verification_retries, 0)
