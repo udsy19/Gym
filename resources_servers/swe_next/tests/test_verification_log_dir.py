@@ -100,3 +100,12 @@ async def test_the_global_debug_dir_applies_under_the_server_name(
     log_dir = await _verify_log_dir(monkeypatch, None)
 
     assert log_dir.relative_to(tmp_path).parts[:2] == ("swe_next", "verification")
+
+
+@pytest.mark.asyncio
+async def test_a_relative_debug_dir_turns_logs_off_with_a_warning(
+    monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    # A relative folder would resolve against the server's source folder, so no logs are written and the verify runs.
+    assert await _verify_log_dir(monkeypatch, Path("swe-next-relative-logs")) is None
+    assert "not an absolute path" in caplog.text
